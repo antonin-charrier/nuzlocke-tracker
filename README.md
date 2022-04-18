@@ -1,4 +1,4 @@
 # Nuzlocke tracker
 
 A helper for your Nuzlocke runs.
--> nuzlocke.web.app
+Go to https://nuzlocke.web.app
