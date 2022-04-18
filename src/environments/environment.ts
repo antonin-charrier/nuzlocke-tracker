@@ -1,5 +1,6 @@
 export const environment = {
   production: false,
+  version: require('../../package.json').version,
   firebase: {
     apiKey: "AIzaSyDGDMYZ33mTFbdI3f9iqsYb6v2if0p_jIs",
     authDomain: "pokemon-streaming.firebaseapp.com",

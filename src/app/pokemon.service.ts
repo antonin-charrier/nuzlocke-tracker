@@ -1,17 +1,56 @@
 import { Injectable } from '@angular/core';
-import { doc, Firestore, onSnapshot } from '@angular/fire/firestore';
-import { addDoc, collection, deleteDoc, deleteField, updateDoc } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, Firestore, getDoc, onSnapshot, updateDoc } from '@angular/fire/firestore';
 import { Pokemon, pokemonConverter } from './pokemon';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PokemonService {
-  session = '2VopSkQRar9K3EJW3p9R';
+  session = '';
 
   constructor(
     private firestore: Firestore
   ) { }
+
+  saveSession(session: string) {
+    this.session = session;
+  }
+
+  storeSession(session: string) {
+    localStorage.setItem('session', session);
+  }
+
+  retrieveSession() {
+    return localStorage.getItem('session');
+  }
+
+  public async attemptSession(session: string): Promise<boolean> {
+    const ref = doc(this.firestore, 'sessions', session);
+    const docSnap = await getDoc(ref);
+
+    if (docSnap.exists()) {
+      this.saveSession(session);
+      this.storeSession(session);
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  public closeSession() {
+    this.session = '';
+    localStorage.clear();
+  }
+
+  public async createSession() {
+    const ref = collection(this.firestore, 'sessions');
+    try {
+      return await addDoc(ref, {});
+    } catch (error) {
+      console.error('Error creating new session', error);
+    }
+    return undefined;
+}
 
   public subscribeToTeam(callback: (team: any[]) => void) {
     const ref = collection(this.firestore, `sessions/${this.session}/team`)

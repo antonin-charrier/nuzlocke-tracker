@@ -3,6 +3,31 @@
   padding-bottom: 100px;
 }
 
+#existing-session {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  align-items: center;
+}
+
+#invalid-session {
+  color: darkred;
+}
+
+#new-session {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  align-items: center;
+}
+
+#current-session {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  align-items: center;
+}
+
 .container {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));

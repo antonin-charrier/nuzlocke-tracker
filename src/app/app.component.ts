@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Unsubscribe } from 'firebase/firestore';
 import { NamedAPIResource, NamedAPIResourceList, PokemonClient, PokemonSpecies } from 'pokenode-ts';
+import { environment } from 'src/environments/environment';
 import { Pokemon } from './pokemon';
 import { PokemonService } from './pokemon.service';
 
@@ -10,6 +11,11 @@ import { PokemonService } from './pokemon.service';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
+  session: string | null = null;
+  loaded = false;
+  version = '0.0.1';
+  sessionAttempt = '';
+  invalidSession = false;
   pokemons: { id: number, name: string }[] = [];
   selectedPokemon: number | undefined = undefined;
   teamUnsub: Unsubscribe | undefined;
@@ -42,6 +48,16 @@ export class AppComponent implements OnInit {
   ) { }
 
   async ngOnInit(): Promise<void> {
+    this.version = environment.version;
+    this.session = this.pokemonService.retrieveSession();
+    if (this.session) {
+      this.pokemonService.saveSession(this.session);
+
+      await this.retrieveData();
+    }
+  }
+
+  async retrieveData() {
     const data = await this.api.listPokemonSpecies(0, 10000);
     await this.getFrenchName(data);
     this.teamUnsub = this.pokemonService.subscribeToTeam(team => {
@@ -56,10 +72,44 @@ export class AppComponent implements OnInit {
       this.cemetery = cemetery;
       this.fillPokemonModels(cemetery);
     });
+    this.loaded = true;
+  }
+
+  async attemptSession() {
+    if (!this.sessionAttempt) { return; }
+    this.invalidSession = false;
+    const success = await this.pokemonService.attemptSession(this.sessionAttempt);
+    if (success) {
+      this.session = this.sessionAttempt;
+      await this.retrieveData();
+    } else {
+      this.sessionAttempt = '';
+      this.invalidSession = true;
+    }
+  }
+
+  async closeSession() {
+    this.pokemonService.closeSession();
+    this.session = null;
+  }
+
+  async newSession() {
+    const session = await this.pokemonService.createSession();
+    if (session) {
+      this.session = session.id;
+      this.pokemonService.saveSession(session.id);
+      this.pokemonService.storeSession(session.id);
+      await this.retrieveData();
+    }
+  }
+
+  copySession() {
+    if (!this.session) { return; }
+    navigator.clipboard.writeText(this.session);
   }
 
   async getFrenchName(data: NamedAPIResourceList) {
-    data.results.forEach(async (pokemon) => {
+    for (const pokemon of data.results) {
       if (this.isNamedAPIResource(pokemon)) {
         const pokemonData = await this.api.getPokemonSpeciesByName(pokemon.name);
         this.pokemons = [...this.pokemons, {
@@ -67,7 +117,7 @@ export class AppComponent implements OnInit {
           name: this.getFullName(pokemonData)
         }];
       }
-    });
+    }
   }
 
   getFullName(pokemon: PokemonSpecies): string {
@@ -77,28 +127,33 @@ export class AppComponent implements OnInit {
     return `${id} - ${frName?.name} / ${enName?.name}`;
   }
 
-  addToTeam() {
-    if (!this.selectedPokemon) { return; }
+  async generatePokemon(): Promise<Pokemon | undefined> {
+    if (!this.selectedPokemon) { return undefined; }
+    const poke = await this.api.getPokemonSpeciesById(this.selectedPokemon);
+    const name = poke.names.find(name => name.language.name === 'en');
 
     const pokemon = new Pokemon({
       id: this.selectedPokemon,
       level: 1,
       gender: 'male',
-      name: 'titu'
+      name: name ? name.name : 'Brad Pitt'
     });
-    this.pokemonService.addToTeam(pokemon);
+    this.selectedPokemon = undefined;
+    return pokemon;
   }
 
-  addToReserve() {
-    if (!this.selectedPokemon) { return; }
+  async addToTeam() {
+    const pokemon = await this.generatePokemon()
+    if (pokemon) {
+      this.pokemonService.addToTeam(pokemon);
+    }
+  }
 
-    const pokemon = new Pokemon({
-      id: this.selectedPokemon,
-      level: 1,
-      gender: 'male',
-      name: 'titu'
-    });
-    this.pokemonService.addToReserve(pokemon);
+  async addToReserve() {
+    const pokemon = await this.generatePokemon()
+    if (pokemon) {
+      this.pokemonService.addToReserve(pokemon);
+    }
   }
 
   sendToTeam(pokemon: Pokemon) {
