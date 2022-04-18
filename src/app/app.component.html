@@ -27,7 +27,7 @@
     </div>
   </section>
 
-  <div *ngIf="!loaded">
+  <div *ngIf="session && !loaded">
     <mat-spinner color="basic" diameter="50"></mat-spinner>
   </div>
 
