@@ -4,8 +4,8 @@
     "indexes": "firestore.indexes.json"
   },
   "hosting": {
-    "site": "pokemon-streaming",
-    "public": "dist/pokemon-streaming",
+    "site": "nuzlocke",
+    "public": "dist/nuzlocke-tracker",
     "ignore": [
       "firebase.json",
       "**/.*",
