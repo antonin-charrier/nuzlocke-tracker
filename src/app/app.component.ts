@@ -58,6 +58,7 @@ export class AppComponent implements OnInit {
   }
 
   async retrieveData() {
+    this.pokemons = [];
     const data = await this.api.listPokemonSpecies(0, 10000);
     await this.getFrenchName(data);
     this.teamUnsub = this.pokemonService.subscribeToTeam(team => {
@@ -91,6 +92,23 @@ export class AppComponent implements OnInit {
   async closeSession() {
     this.pokemonService.closeSession();
     this.session = null;
+  }
+
+  async deleteSession() {
+    if (confirm("Are you sure to want to PERMANENTLY delete your session?")) {
+      for (const pokemon of this.team) {
+        await this.pokemonService.removeFromTeam(pokemon.id);
+      }
+      for (const pokemon of this.reserve) {
+        await this.pokemonService.removeFromReserve(pokemon.id);
+      }
+      for (const pokemon of this.cemetery) {
+        await this.pokemonService.removeFromCemetery(pokemon.id);
+      }
+      await this.pokemonService.deleteSession();
+      await this.closeSession();
+      this.sessionAttempt = '';
+    }
   }
 
   async newSession() {

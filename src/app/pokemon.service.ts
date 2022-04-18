@@ -42,6 +42,17 @@ export class PokemonService {
     localStorage.clear();
   }
 
+  public async deleteSession() {
+    const ref = doc(this.firestore,
+      `sessions/${this.session}`);
+    try {
+      await deleteDoc(ref);
+    }
+    catch (error) {
+      console.error('Error deleting session', error);
+    }
+  }
+
   public async createSession() {
     const ref = collection(this.firestore, 'sessions');
     try {
