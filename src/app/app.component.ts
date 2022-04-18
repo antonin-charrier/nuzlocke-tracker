@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Unsubscribe } from 'firebase/firestore';
 import { NamedAPIResource, NamedAPIResourceList, PokemonClient, PokemonSpecies } from 'pokenode-ts';
 import { Pokemon } from './pokemon';
 import { PokemonService } from './pokemon.service';
@@ -9,11 +10,28 @@ import { PokemonService } from './pokemon.service';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
-  session = '2VopSkQRar9K3EJW3p9R';
-  team = '0OG4Eul9xVPoe7Fe5ayY';
-  reserve = 'G1vNC6baUL41AeA85Pwc';
   pokemons: { id: number, name: string }[] = [];
   selectedPokemon: number | undefined = undefined;
+  teamUnsub: Unsubscribe | undefined;
+  team: any[] = [];
+  reserveUnsub: Unsubscribe | undefined;
+  reserve: any[] = [];
+  cemeteryUnsub: Unsubscribe | undefined;
+  cemetery: any[] = [];
+  genders = [
+    {
+      name: 'Male',
+      id: 'male'
+    },
+    {
+      name: 'Female',
+      id: 'female'
+    },
+    {
+      name: 'None',
+      id: 'none'
+    }
+  ]
 
   api = new PokemonClient({
     cacheOptions: { maxAge: 30 * 60 * 1000, exclude: { query: false } },
@@ -24,12 +42,20 @@ export class AppComponent implements OnInit {
   ) { }
 
   async ngOnInit(): Promise<void> {
-    (async () => {
-      await this.api
-        .listPokemonSpecies(0, 10000)
-        .then(async (data) => await this.getFrenchName(data)) // will output "Luxray"
-        .catch((error) => console.error(error));
-    })();
+    const data = await this.api.listPokemonSpecies(0, 10000);
+    await this.getFrenchName(data);
+    this.teamUnsub = this.pokemonService.subscribeToTeam(team => {
+      this.team = team;
+      this.fillPokemonModels(team);
+    });
+    this.reserveUnsub = this.pokemonService.subscribeToReserve(reserve => {
+      this.reserve = reserve;
+      this.fillPokemonModels(reserve);
+    });
+    this.cemeteryUnsub = this.pokemonService.subscribeToCemetery(cemetery => {
+      this.cemetery = cemetery;
+      this.fillPokemonModels(cemetery);
+    });
   }
 
   async getFrenchName(data: NamedAPIResourceList) {
@@ -60,7 +86,7 @@ export class AppComponent implements OnInit {
       gender: 'male',
       name: 'titu'
     });
-    this.pokemonService.addToTeam(this.session, this.team, pokemon);
+    this.pokemonService.addToTeam(pokemon);
   }
 
   addToReserve() {
@@ -72,10 +98,60 @@ export class AppComponent implements OnInit {
       gender: 'male',
       name: 'titu'
     });
-    this.pokemonService.addToReserve(this.session, this.reserve, pokemon);
+    this.pokemonService.addToReserve(pokemon);
+  }
+
+  sendToTeam(pokemon: Pokemon) {
+    if (this.team.length >= 6) { return; }
+    this.pokemonService.sendToTeam(pokemon);
+  }
+
+  sendToReserve(pokemon: Pokemon) {
+    this.pokemonService.sendToReserve(pokemon);
+  }
+
+  sendToCemetery(pokemon: Pokemon) {
+    this.pokemonService.sendToCemetery(pokemon);
   }
 
   isNamedAPIResource(object: any): object is NamedAPIResource {
     return !!object.name;
+  }
+
+  fillPokemonModels(pokemons: any[]) {
+    (async () => {
+      for (const pokemon of pokemons) {
+        const poke = await this.api.getPokemonById(pokemon.id);
+        pokemon.image = `assets/img/pokemon/models/${poke.name}.gif`;
+      }
+    })();
+  }
+
+  updateGender(pokemon: Pokemon, location: 'team' | 'reserve' | 'cemetery',
+      gender: 'male' | 'female' | 'none') {
+    pokemon.gender = gender;
+    this.pokemonService.updateGender(pokemon, location);
+  }
+
+  updateName(pokemon: any, location: 'team' | 'reserve' | 'cemetery') {
+    pokemon.editName = false;
+    this.pokemonService.updateName(pokemon, location);
+  }
+
+  updateLevel(pokemon: any, location: 'team' | 'reserve' | 'cemetery') {
+    pokemon.editLevel = false;
+    this.pokemonService.updateLevel(pokemon, location);
+  }
+
+  addLevel(pokemon: any, location: 'team' | 'reserve' | 'cemetery') {
+    if (pokemon.level >= 100) { return; }
+    pokemon.level++;
+    this.updateLevel(pokemon, location);
+  }
+
+  removeLevel(pokemon: any, location: 'team' | 'reserve' | 'cemetery') {
+    if (pokemon.level === 1) { return; }
+    pokemon.level--;
+    this.updateLevel(pokemon, location);
   }
 }

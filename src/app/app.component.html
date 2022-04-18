@@ -1,6 +1,160 @@
-<ng-select [items]="pokemons" [(ngModel)]="selectedPokemon"
-  bindLabel="name" bindValue="id" [selectOnTab]="true">
-</ng-select>
+<div id="app">
+  <h1>Nuzlocke helper</h1>
+  <h4>Developed by @ourakoz</h4>
 
-<button (click)="addToTeam()">Add to team</button>
-<button (click)="addToReserve()">Add to reserve</button>
+  <section id="new">
+    <h2 class="label">New</h2>
+    <div id="new-container">
+      <ng-select id="select-pokemon" [items]="pokemons" [(ngModel)]="selectedPokemon"
+        bindLabel="name" bindValue="id" [selectOnTab]="true">
+      </ng-select>
+
+      <button mat-stroked-button (click)="addToTeam()">TEAM</button>
+      <button mat-stroked-button (click)="addToReserve()">RESERVE</button>
+    </div>
+  </section>
+
+  <section id="team">
+    <h2 class="label">Team</h2>
+    <div class="container">
+      <div *ngFor="let pokemon of team">
+        <mat-card class="pokemon-card">
+          <mat-card-header>
+            <img src="assets/img/pokemon/male.svg" class="gender"
+              *ngIf="pokemon.gender === 'male'"[matMenuTriggerFor]="genderMenu" />
+            <img src="assets/img/pokemon/female.svg" class="gender"
+              *ngIf="pokemon.gender === 'female'" [matMenuTriggerFor]="genderMenu" />
+            <div height="16px" width="16px" class="gender"
+              *ngIf="pokemon.gender === 'none'" [matMenuTriggerFor]="genderMenu"></div>
+            <mat-menu #genderMenu="matMenu">
+              <button mat-menu-item (click)="updateGender(pokemon, 'team', 'male')">Male</button>
+              <button mat-menu-item (click)="updateGender(pokemon, 'team', 'female')">Female</button>
+              <button mat-menu-item (click)="updateGender(pokemon, 'team', 'none')">None</button>
+            </mat-menu>
+            <mat-card-title class="name">
+              <span *ngIf="!pokemon.editName" (click)="pokemon.editName = true">{{ pokemon.name }}</span>
+              <input type="text" *ngIf="pokemon.editName" [placeholder]="pokemon.name"
+                [(ngModel)]="pokemon.name" (keyup.enter)="updateName(pokemon, 'team')"
+                (clickOutside)="updateName(pokemon, 'team')" [delayClickOutsideInit]="true" />
+            </mat-card-title>
+            <mat-card-subtitle class="level">
+              <div *ngIf="!pokemon.editLevel">
+                <span (click)="pokemon.editLevel = true">N.{{ pokemon.level }}</span>
+                <button mat-icon-button color="accent" (click)="addLevel(pokemon, 'team')" class="level-button">
+                  <mat-icon>add_circle</mat-icon>
+                </button>
+                <button mat-icon-button color="accent" (click)="removeLevel(pokemon, 'team')" class="level-button">
+                  <mat-icon>remove_circle</mat-icon>
+                </button>
+              </div>
+              <input type="number" *ngIf="pokemon.editLevel" [placeholder]="pokemon.level"
+                [(ngModel)]="pokemon.level" (keyup.enter)="updateLevel(pokemon, 'team')"
+                (clickOutside)="updateLevel(pokemon, 'team')" [delayClickOutsideInit]="true" />
+            </mat-card-subtitle>
+          </mat-card-header>
+          <img mat-card-sm-image [src]="pokemon.image">
+          <mat-card-actions>
+            <button mat-button (click)="sendToReserve(pokemon)">RESERVE</button>
+            <button mat-button (click)="sendToCemetery(pokemon)">RIP</button>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+    </div>
+  </section>
+
+  <section id="reserve">
+    <h2 class="label">Reserve</h2>
+    <div class="container">
+      <div *ngFor="let pokemon of reserve">
+        <mat-card class="pokemon-card">
+          <mat-card-header>
+            <img src="assets/img/pokemon/male.svg" class="gender"
+              *ngIf="pokemon.gender === 'male'"[matMenuTriggerFor]="genderMenu" />
+            <img src="assets/img/pokemon/female.svg" class="gender"
+              *ngIf="pokemon.gender === 'female'" [matMenuTriggerFor]="genderMenu" />
+            <div height="16px" width="16px" class="gender"
+              *ngIf="pokemon.gender === 'none'" [matMenuTriggerFor]="genderMenu"></div>
+            <mat-menu #genderMenu="matMenu">
+              <button mat-menu-item (click)="updateGender(pokemon, 'reserve', 'male')">Male</button>
+              <button mat-menu-item (click)="updateGender(pokemon, 'reserve', 'female')">Female</button>
+              <button mat-menu-item (click)="updateGender(pokemon, 'reserve', 'none')">None</button>
+            </mat-menu>
+            <mat-card-title class="name">
+              <span *ngIf="!pokemon.editName" (click)="pokemon.editName = true">{{ pokemon.name }}</span>
+              <input type="text" *ngIf="pokemon.editName" [placeholder]="pokemon.name"
+                [(ngModel)]="pokemon.name" (keyup.enter)="updateName(pokemon, 'reserve')"
+                (clickOutside)="updateName(pokemon, 'reserve')" [delayClickOutsideInit]="true" />
+            </mat-card-title>
+            <mat-card-subtitle class="level">
+              <div *ngIf="!pokemon.editLevel">
+                <span (click)="pokemon.editLevel = true">N.{{ pokemon.level }}</span>
+                <button mat-icon-button color="accent" (click)="addLevel(pokemon, 'reserve')" class="level-button">
+                  <mat-icon>add_circle</mat-icon>
+                </button>
+                <button mat-icon-button color="accent" (click)="removeLevel(pokemon, 'reserve')" class="level-button">
+                  <mat-icon>remove_circle</mat-icon>
+                </button>
+              </div>
+              <input type="number" *ngIf="pokemon.editLevel" [placeholder]="pokemon.level"
+                [(ngModel)]="pokemon.level" (keyup.enter)="updateLevel(pokemon, 'reserve')"
+                (clickOutside)="updateLevel(pokemon, 'reserve')" [delayClickOutsideInit]="true" />
+            </mat-card-subtitle>
+          </mat-card-header>
+          <img mat-card-sm-image [src]="pokemon.image">
+          <mat-card-actions>
+            <button *ngIf="team.length < 6" mat-button (click)="sendToTeam(pokemon)">TEAM</button>
+            <button mat-button (click)="sendToCemetery(pokemon)">RIP</button>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+    </div>
+  </section>
+
+  <section id="cemetery">
+    <h2 class="label">Cemetery</h2>
+    <div class="container">
+      <div *ngFor="let pokemon of cemetery">
+        <mat-card class="pokemon-card">
+          <mat-card-header>
+            <img src="assets/img/pokemon/male.svg" class="gender"
+              *ngIf="pokemon.gender === 'male'"[matMenuTriggerFor]="genderMenu" />
+            <img src="assets/img/pokemon/female.svg" class="gender"
+              *ngIf="pokemon.gender === 'female'" [matMenuTriggerFor]="genderMenu" />
+            <div height="16px" width="16px" class="gender"
+              *ngIf="pokemon.gender === 'none'" [matMenuTriggerFor]="genderMenu"></div>
+            <mat-menu #genderMenu="matMenu">
+              <button mat-menu-item (click)="updateGender(pokemon, 'cemetery', 'male')">Male</button>
+              <button mat-menu-item (click)="updateGender(pokemon, 'cemetery', 'female')">Female</button>
+              <button mat-menu-item (click)="updateGender(pokemon, 'cemetery', 'none')">None</button>
+            </mat-menu>
+            <mat-card-title class="name">
+              <span *ngIf="!pokemon.editName" (click)="pokemon.editName = true">{{ pokemon.name }} ✞</span>
+              <input type="text" *ngIf="pokemon.editName" [placeholder]="pokemon.name"
+                [(ngModel)]="pokemon.name" (keyup.enter)="updateName(pokemon, 'cemetery')"
+                (clickOutside)="updateName(pokemon, 'cemetery')" [delayClickOutsideInit]="true" />
+            </mat-card-title>
+            <mat-card-subtitle class="level">
+              <div *ngIf="!pokemon.editLevel">
+                <span (click)="pokemon.editLevel = true">N.{{ pokemon.level }}</span>
+                <button mat-icon-button color="accent" (click)="addLevel(pokemon, 'cemetery')" class="level-button">
+                  <mat-icon>add_circle</mat-icon>
+                </button>
+                <button mat-icon-button color="accent" (click)="removeLevel(pokemon, 'cemetery')" class="level-button">
+                  <mat-icon>remove_circle</mat-icon>
+                </button>
+              </div>
+              <input type="number" *ngIf="pokemon.editLevel" [placeholder]="pokemon.level"
+                [(ngModel)]="pokemon.level" (keyup.enter)="updateLevel(pokemon, 'cemetery')"
+                (clickOutside)="updateLevel(pokemon, 'cemetery')" [delayClickOutsideInit]="true" />
+            </mat-card-subtitle>
+          </mat-card-header>
+          <img mat-card-sm-image [src]="pokemon.image" class="dead-pokemon">
+          <mat-card-actions>
+            <button *ngIf="team.length < 6" mat-button (click)="sendToTeam(pokemon)">TEAM</button>
+            <button mat-button (click)="sendToReserve(pokemon)">RESERVE</button>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+    </div>
+  </section>
+</div>
