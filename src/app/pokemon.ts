@@ -5,6 +5,7 @@ export interface Pokemon {
   id: number;
   level: number;
   name: string;
+  evolutions: { id: number, name: string }[];
   gender: 'male' | 'female' | 'none';
 }
 

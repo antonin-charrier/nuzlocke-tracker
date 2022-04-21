@@ -87,6 +87,15 @@
                   [(ngModel)]="pokemon.level" (keyup.enter)="updateLevel(pokemon, 'team')"
                   (clickOutside)="updateLevel(pokemon, 'team')" [delayClickOutsideInit]="true" />
               </mat-card-subtitle>
+              <button mat-icon-button [matMenuTriggerFor]="deleteMenu">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #deleteMenu="matMenu">
+                <ng-container *ngFor="let evolution of pokemon.evolutions">
+                  <button mat-menu-item (click)="updateId(pokemon, evolution.id, 'team')">{{ evolution.name }}</button>
+                </ng-container>
+                <button mat-menu-item class="delete-pokemon" (click)="delete(pokemon, 'team')">Delete Pokémon</button>
+              </mat-menu>
             </mat-card-header>
             <img mat-card-sm-image [src]="pokemon.image">
             <mat-card-actions>
@@ -140,6 +149,15 @@
                   [(ngModel)]="pokemon.level" (keyup.enter)="updateLevel(pokemon, 'reserve')"
                   (clickOutside)="updateLevel(pokemon, 'reserve')" [delayClickOutsideInit]="true" />
               </mat-card-subtitle>
+              <button mat-icon-button [matMenuTriggerFor]="deleteMenu">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #deleteMenu="matMenu">
+                <ng-container *ngFor="let evolution of pokemon.evolutions">
+                  <button mat-menu-item (click)="updateId(pokemon, evolution.id, 'team')">{{ evolution.name }}</button>
+                </ng-container>
+                <button mat-menu-item class="delete-pokemon" (click)="delete(pokemon, 'reserve')">Delete Pokémon</button>
+              </mat-menu>
             </mat-card-header>
             <img mat-card-sm-image [src]="pokemon.image">
             <mat-card-actions>
@@ -193,6 +211,15 @@
                   [(ngModel)]="pokemon.level" (keyup.enter)="updateLevel(pokemon, 'cemetery')"
                   (clickOutside)="updateLevel(pokemon, 'cemetery')" [delayClickOutsideInit]="true" />
               </mat-card-subtitle>
+              <button mat-icon-button [matMenuTriggerFor]="deleteMenu">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #deleteMenu="matMenu">
+                <ng-container *ngFor="let evolution of pokemon.evolutions">
+                  <button mat-menu-item (click)="updateId(pokemon, evolution.id, 'team')">{{ evolution.name }}</button>
+                </ng-container>
+                <button mat-menu-item class="delete-pokemon" (click)="delete(pokemon, 'cemetery')">Delete Pokémon</button>
+              </mat-menu>
             </mat-card-header>
             <img mat-card-sm-image [src]="pokemon.image" class="dead-pokemon">
             <mat-card-actions>

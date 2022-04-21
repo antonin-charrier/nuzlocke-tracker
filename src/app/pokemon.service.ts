@@ -194,4 +194,11 @@ export class PokemonService {
 
     await updateDoc(ref, { level: pokemon.level });
   }
+
+  public async updateId(pokemon: Pokemon, location: 'team' | 'reserve' | 'cemetery'): Promise<void> {
+    const ref = doc(this.firestore,
+      `sessions/${this.session}/${location}/${pokemon.uid}`);
+
+    await updateDoc(ref, { id: pokemon.id });
+  }
 }
